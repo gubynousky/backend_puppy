@@ -27,16 +27,29 @@ public class UserController {
     @PostMapping("/registro")
     public ResponseEntity<?> registrarUsuario(@Valid @RequestBody User user) {
         try {
+            System.out.println("=== REGISTRO DE USUARIO ===");
+            System.out.println("Nombre: " + user.getNombre());
+            System.out.println("Apellido: " + user.getApellido());
+            System.out.println("Email: " + user.getEmail());
+            System.out.println("Teléfono: " + user.getTelefono());
+            System.out.println("Fecha Nacimiento: " + user.getFechaNacimiento());
+
             User nuevoUsuario = userService.registrarUsuario(user);
+
+            System.out.println("Usuario registrado exitosamente con ID: " + nuevoUsuario.getId());
+
             Map<String, Object> response = new HashMap<>();
             response.put("mensaje", "Usuario registrado exitosamente");
             response.put("usuario", nuevoUsuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
+            System.err.println("Error de validación: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
+            System.err.println("Error inesperado al registrar usuario:");
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al registrar usuario"));
+                    .body(Map.of("error", "Error al registrar usuario: " + e.getMessage()));
         }
     }
 
@@ -46,17 +59,24 @@ public class UserController {
             String email = credentials.get("email");
             String password = credentials.get("password");
 
+            System.out.println("Intento de login para: " + email);
+
             if (userService.validarCredenciales(email, password)) {
                 User user = userService.obtenerUsuarioPorEmail(email).orElseThrow();
                 Map<String, Object> response = new HashMap<>();
                 response.put("mensaje", "Login exitoso");
                 response.put("usuario", user);
+
+                System.out.println("Login exitoso para: " + email);
                 return ResponseEntity.ok(response);
             } else {
+                System.out.println("Credenciales inválidas para: " + email);
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("error", "Credenciales inválidas"));
             }
         } catch (Exception e) {
+            System.err.println("Error en login:");
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al iniciar sesión"));
         }
