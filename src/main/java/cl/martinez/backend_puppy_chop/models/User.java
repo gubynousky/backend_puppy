@@ -6,10 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
@@ -23,40 +24,49 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "El nombre es obligatorio")
-    @Size(min = 2, max = 50, message = "el nombre debe contener entre 2 y 50 caracteres")
-    @Column(nullable = false, length = 50)
+    @NotBlank
+    @Column(nullable = false)
     private String nombre;
 
-    @NotBlank(message = "el apellido es obligatorio")
-    @Size(min = 2, max = 50, message = "el apellido debe contener entre 2 y 50 caracteres")
-    @Column(nullable = false, length = 50)
+    @NotBlank
+    @Column(nullable = false)
     private String apellido;
 
-    @NotBlank(message = "el correo es obligatorio")
-    @Email(message = "el email debe der valido")
-    @Column(nullable = false, unique = true, length = 100)
+    @NotBlank
+    @Email
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank(message = "la contrseña es obligatoria")
-    @Size(min = 6, max = 12, message = "la contraseña debe tener un minimo de 6 caracteres y un maximo de 12 caracteres")
+    @NotBlank
     @Column(nullable = false)
     private String password;
 
-    @NotBlank(message = "el telefono es obligatorio")
-    @Pattern(regexp = "^\\+?[0-9\\s-]{9,15}$", message = "Teléfono inválido")
-    @Column(nullable = false, length = 20)
+    @NotBlank
+    @Column(nullable = false)
     private String telefono;
 
-    @NotBlank(message = "La fecha de nacimiento es obligatoria")
-    @Past(message = "La fecha de naciemito debe ser en el pasado")
+    @NotNull
     @Column(name = "fecha_nacimiento", nullable = false)
     private LocalDate fechaNacimiento;
 
-    @CreationTimestamp
-    @Column(name = "fecha_registro", nullable = false, updatable = false)
+    @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
-    // RELACIONES
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean activo = true;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<PetProfile> mascotas = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @Builder.Default
+    private List<FavoriteProduct> productosFavoritos = new ArrayList<>();
+
+    @PrePersist
+    public void prePersist() {
+        fechaRegistro = LocalDateTime.now();
+        if (activo == null) activo = true;
+    }
 }
