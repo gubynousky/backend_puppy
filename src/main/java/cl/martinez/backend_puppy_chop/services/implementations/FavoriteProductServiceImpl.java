@@ -2,6 +2,8 @@ package cl.martinez.backend_puppy_chop.services.implementations;
 
 import cl.martinez.backend_puppy_chop.contracts.IFavoriteProductService;
 import cl.martinez.backend_puppy_chop.models.FavoriteProduct;
+import cl.martinez.backend_puppy_chop.models.Product;
+import cl.martinez.backend_puppy_chop.models.User;
 import cl.martinez.backend_puppy_chop.repositories.FavoriteProductRepository;
 import cl.martinez.backend_puppy_chop.repositories.ProductRepository;
 import cl.martinez.backend_puppy_chop.repositories.UserRepository;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Transactional
 public class FavoriteProductServiceImpl implements IFavoriteProductService {
 
     private final FavoriteProductRepository favoriteProductRepository;
@@ -21,29 +22,46 @@ public class FavoriteProductServiceImpl implements IFavoriteProductService {
     private final ProductRepository productRepository;
 
     @Autowired
-    public FavoriteProductServiceImpl(FavoriteProductRepository favoriteProductRepository,
-                                      UserRepository userRepository,
-                                      ProductRepository productRepository) {
+    public FavoriteProductServiceImpl(
+            FavoriteProductRepository favoriteProductRepository,
+            UserRepository userRepository,
+            ProductRepository productRepository) {
         this.favoriteProductRepository = favoriteProductRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
     }
 
     @Override
-    public FavoriteProduct agregarFavorito(FavoriteProduct favoriteProduct) {
-        if (!userRepository.existsById(favoriteProduct.getUser().getId())) {
-            throw new IllegalArgumentException("Usuario no encontrado");
-        }
+    @Transactional
+    public FavoriteProduct agregarFavorito(Long userId, Long productId, String categoriaInteres, Boolean notificarOfertas) {
+        System.out.println("Service - Agregando favorito:");
+        System.out.println("  User ID: " + userId);
+        System.out.println("  Product ID: " + productId);
 
-        if (!productRepository.existsById(favoriteProduct.getProduct().getId())) {
-            throw new IllegalArgumentException("Producto no encontrado");
-        }
+        // Verificar que el usuario existe
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con ID: " + userId));
 
-        if (existeFavorito(favoriteProduct.getUser().getId(), favoriteProduct.getProduct().getId())) {
+        // Verificar que el producto existe
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado con ID: " + productId));
+
+        // Verificar si ya existe el favorito
+        if (favoriteProductRepository.existsByUserIdAndProductId(userId, productId)) {
             throw new IllegalArgumentException("Este producto ya está en favoritos");
         }
 
-        return favoriteProductRepository.save(favoriteProduct);
+        FavoriteProduct favorito = FavoriteProduct.builder()
+                .user(user)
+                .product(product)
+                .categoriaInteres(categoriaInteres)
+                .notificarOfertas(notificarOfertas != null ? notificarOfertas : false)
+                .build();
+
+        FavoriteProduct saved = favoriteProductRepository.save(favorito);
+        System.out.println("Favorito guardado con ID: " + saved.getId());
+
+        return saved;
     }
 
     @Override
@@ -59,9 +77,10 @@ public class FavoriteProductServiceImpl implements IFavoriteProductService {
     }
 
     @Override
+    @Transactional
     public void eliminarFavorito(Long id) {
         if (!favoriteProductRepository.existsById(id)) {
-            throw new IllegalArgumentException("Producto favorito no encontrado");
+            throw new IllegalArgumentException("Favorito no encontrado");
         }
         favoriteProductRepository.deleteById(id);
     }

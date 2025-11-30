@@ -1,5 +1,6 @@
 package cl.martinez.backend_puppy_chop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -57,10 +58,12 @@ public class User {
     private Boolean activo = true;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     @Builder.Default
     private List<PetProfile> mascotas = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonIgnore
     @Builder.Default
     private List<FavoriteProduct> productosFavoritos = new ArrayList<>();
 

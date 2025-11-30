@@ -1,5 +1,6 @@
 package cl.martinez.backend_puppy_chop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -24,11 +25,13 @@ public class FavoriteProduct {
 
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
+    @JsonIgnore
     @NotNull
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "producto_id", nullable = false)
+    @JsonIgnore
     @NotNull
     private Product product;
 

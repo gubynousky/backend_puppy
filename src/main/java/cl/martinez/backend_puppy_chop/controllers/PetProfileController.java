@@ -29,42 +29,21 @@ public class PetProfileController {
     @PostMapping("/usuario/{userId}")
     public ResponseEntity<?> crearPerfilMascota(@PathVariable Long userId, @Valid @RequestBody PetProfile petProfile) {
         try {
-            System.out.println("=== CREANDO PERFIL DE MASCOTA ===");
-            System.out.println("Usuario ID: " + userId);
-            System.out.println("Nombre Mascota: " + petProfile.getNombreMascota());
-            System.out.println("Tipo: " + petProfile.getTipo());
-            System.out.println("Raza: " + petProfile.getRaza());
-            System.out.println("Edad: " + petProfile.getEdad());
-            System.out.println("Peso: " + petProfile.getPeso());
-            System.out.println("Tamaño: " + petProfile.getTamaño());
+            System.out.println("Creando perfil de mascota para usuario: " + userId);
 
             PetProfile nuevoPerfil = petProfileService.crearPerfilMascota(petProfile, userId);
 
-            System.out.println("Perfil de mascota creado exitosamente con ID: " + nuevoPerfil.getId());
-
-            // IMPORTANTE: Crear respuesta manual SIN incluir el objeto User completo
-            Map<String, Object> mascotaResponse = new HashMap<>();
-            mascotaResponse.put("id", nuevoPerfil.getId());
-            mascotaResponse.put("nombreMascota", nuevoPerfil.getNombreMascota());
-            mascotaResponse.put("tipo", nuevoPerfil.getTipo());
-            mascotaResponse.put("raza", nuevoPerfil.getRaza());
-            mascotaResponse.put("edad", nuevoPerfil.getEdad());
-            mascotaResponse.put("peso", nuevoPerfil.getPeso());
-            mascotaResponse.put("tamaño", nuevoPerfil.getTamaño());
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("mensaje", "Perfil de mascota creado exitosamente");
-            response.put("mascota", mascotaResponse);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            // Ahora puedes retornar el perfil directamente
+            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                    "mensaje", "Perfil de mascota creado exitosamente",
+                    "mascota", nuevoPerfil  // ← Funciona sin HashMap manual
+            ));
         } catch (IllegalArgumentException e) {
-            System.err.println("Error de validación en mascota: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            System.err.println("Error inesperado al crear mascota:");
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al crear perfil de mascota: " + e.getMessage()));
+                    .body(Map.of("error", "Error al crear perfil de mascota"));
         }
     }
 

@@ -1,5 +1,6 @@
 package cl.martinez.backend_puppy_chop.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -50,6 +51,7 @@ public class Product {
     private Boolean activo = true;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @JsonIgnore
     @Builder.Default
     private List<FavoriteProduct> favoritos = new ArrayList<>();
 }
